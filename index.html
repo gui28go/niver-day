@@ -1,0 +1,470 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Sua Surpresa - Delacruz</title>
+  <style>
+    :root {
+      --primary: #f97316;
+      --secondary: #ec4899;
+      --accent: #a855f7;
+      --bg-dark: #050009;
+      --text: #fdfdfd;
+    }
+
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+
+    body {
+      font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+
+    /* Fundo Animado */
+    .bg-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, #2e1065, #000);
+      z-index: -2;
+    }
+
+
+    .orbs span {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.4;
+      animation: float 10s infinite alternate ease-in-out;
+      z-index: -1;
+    }
+    .orbs span:nth-child(1) { width: 300px; height: 300px; background: var(--secondary); top: -50px; left: -50px; }
+    .orbs span:nth-child(2) { width: 250px; height: 250px; background: var(--accent); bottom: 10%; right: -20px; animation-delay: 2s; }
+    .orbs span:nth-child(3) { width: 150px; height: 150px; background: var(--primary); top: 40%; left: 30%; animation-delay: 4s; }
+
+
+    @keyframes float {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-20px) scale(1.1); }
+    }
+
+
+    /* Barras de Progresso */
+    .progress-container {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
+      z-index: 100;
+    }
+
+
+    .progress-bar {
+      flex: 1;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+
+    .progress-fill {
+      height: 100%;
+      background: #fff;
+      width: 0%;
+      transition: width 0.2s linear;
+    }
+
+
+    .progress-bar.active .progress-fill { width: 100%; }
+    .progress-bar.visited .progress-fill { width: 100%; transition: none; }
+    
+    /* Slides */
+    .story-container {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 30px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      transform: scale(0.95);
+    }
+
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+
+    /* Conteúdo */
+    h1 {
+      font-size: 2.2rem;
+      line-height: 1.1;
+      font-weight: 800;
+      margin-bottom: 20px;
+      background: linear-gradient(to right, #fff, #cbd5e1);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: slideUp 0.6s ease forwards;
+    }
+
+
+    .highlight-text {
+      background: linear-gradient(120deg, var(--primary), var(--secondary), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+
+    p {
+      font-size: 1.1rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+      max-width: 400px;
+      animation: slideUp 0.6s ease 0.2s forwards;
+      opacity: 0;
+    }
+
+
+    .emoji-big {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+
+    /* Galeria de Fotos */
+    .photo-stack {
+      position: relative;
+      width: 280px;
+      height: 380px;
+      margin-bottom: 20px;
+    }
+
+
+    .photo-card {
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      background-size: cover;
+      background-position: center;
+      border: 4px solid #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transform-origin: center bottom;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+
+
+    /* Animação das fotos empilhadas */
+    .photo-card:nth-child(1) { z-index: 3; transform: rotate(-2deg); }
+    .photo-card:nth-child(2) { z-index: 2; transform: rotate(3deg) translate(5px, -5px); }
+    .photo-card:nth-child(3) { z-index: 1; transform: rotate(-4deg) translate(-5px, -10px); }
+
+
+    /* Ingresso */
+    .ticket-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 20px;
+      width: 100%;
+      max-width: 350px;
+      text-align: left;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      margin-bottom: 20px;
+      animation: slideUp 0.5s ease 0.3s forwards;
+      opacity: 0;
+    }
+
+
+    .ticket-header {
+      border-bottom: 1px dashed rgba(255,255,255,0.3);
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+    }
+
+
+    .ticket-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #94a3b8;
+    }
+
+
+    .ticket-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+
+    .code-box {
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-family: monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    .code-box:active { background: rgba(0,0,0,0.5); }
+    .copy-hint { font-size: 0.7rem; color: var(--secondary); }
+
+
+    /* Botão Link Direto */
+    .btn-action {
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      color: white;
+      border: none;
+      padding: 16px;
+      width: 100%;
+      border-radius: 99px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(236, 72, 153, 0.4);
+      animation: pulse 2s infinite;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+
+    .nav-zones {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      z-index: 50;
+    }
+    .nav-left { width: 30%; height: 100%; }
+    .nav-right { width: 70%; height: 100%; }
+
+
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounceIn { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+    
+    .confetti {
+      position: absolute;
+      width: 10px; height: 10px;
+      background: #f00;
+      animation: fall linear forwards;
+    }
+    @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
+  </style>
+</head>
+<body>
+
+
+  <div class="bg-gradient"></div>
+  <div class="orbs">
+    <span></span><span></span><span></span>
+  </div>
+
+
+  <div class="progress-container">
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+
+
+  <div class="story-container">
+    
+    <div class="slide active">
+      <div class="emoji-big">🎁</div>
+      <h1>Ei, psiu...</h1>
+      <p>Hoje não é um dia qualquer.</p>
+      <p style="margin-top:10px; font-size:0.9rem; color:#a5b4fc">Toque na tela para continuar ></p>
+    </div>
+
+
+    <div class="slide">
+      <h1>Nossos Momentos</h1>
+      <div class="photo-stack">
+        <div class="photo-card" style="background-image: url('IMG_20251225_173147.jpg');"></div>
+        <div class="photo-card" style="background-image: url('IMG_20250724_115431.jpg');"></div>
+        <div class="photo-card" style="background-image: url('IMG_20250630_085609.jpg');"></div>
+      </div>
+      <p style="margin-top:10px;">Colecionando memórias...</p>
+    </div>
+
+
+    <div class="slide">
+      <div class="photo-stack">
+        <div class="photo-card" style="background-image: url('IMG_20250628_205620.jpg');"></div>
+        <div class="photo-card" style="background-image: url('2024, 18_17_25_20250101_152935_0000.jpg');"></div>
+        <div class="photo-card" style="background-image: url('2024, 18_17_23_20250101_152942_0000.jpg');"></div>
+      </div>
+      <p>...e hoje vamos criar mais uma inesquecível!</p>
+    </div>
+
+
+    <div class="slide">
+      <div class="emoji-big">🎤</div>
+      <h1>É show do <br><span class="highlight-text">DELACRUZ!</span></h1>
+      <p>Você vai cantar todas ao vivo.</p>
+    </div>
+
+
+    <div class="slide">
+      <h1>Tá na mão! 🎟️</h1>
+      
+      <div class="ticket-card">
+        <div class="ticket-header">
+          <div class="ticket-label">Evento</div>
+          <div class="ticket-value highlight-text">Delacruz - Tour</div>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+          <div class="ticket-label">Seus dados de Acesso</div>
+          
+          <div class="code-box" onclick="copiarTexto('11310612501')">
+            <span>CPF: 11310612501</span>
+            <span class="copy-hint">copiar</span>
+          </div>
+          
+          <div class="code-box" onclick="copiarTexto('Pimentinha.DC2')">
+            <span>Senha: Pimentinha.DC2</span>
+            <span class="copy-hint">copiar</span>
+          </div>
+        </div>
+
+
+        <p style="font-size:0.8rem; margin-bottom:15px; color:#cbd5e1;">Clique abaixo para abrir o site:</p>
+
+
+        <a href="https://voucher.meubilhete.com.br/voucher/?id1=0d4b1ffe-6f6c-4e3d-ad83-d9a553f0c116" target="_blank" class="btn-action">
+          ABRIR MEU INGRESSO 🔗
+        </a>
+      </div>
+      
+      <p style="font-size:0.8rem; opacity:0.6;">Te amo, irmão! ❤️</p>
+    </div>
+
+
+  </div>
+
+
+  <div class="nav-zones">
+    <div class="nav-left" onclick="prevSlide()"></div>
+    <div class="nav-right" onclick="nextSlide()"></div>
+  </div>
+
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const bars = document.querySelectorAll('.progress-bar');
+    const totalSlides = slides.length;
+
+
+    function updateSlides() {
+      slides.forEach((slide, index) => {
+        slide.classList.remove('active');
+        if (index === currentSlide) {
+          slide.classList.add('active');
+          if (index === totalSlides - 1) soltarConfete();
+        }
+      });
+
+
+      bars.forEach((bar, index) => {
+        bar.classList.remove('active', 'visited');
+        const fill = bar.querySelector('.progress-fill');
+        if (index < currentSlide) {
+          bar.classList.add('visited');
+          fill.style.width = '100%';
+        } else if (index === currentSlide) {
+          bar.classList.add('active');
+          fill.style.width = '100%'; 
+        } else {
+          fill.style.width = '0%';
+        }
+      });
+    }
+
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSlides();
+      }
+    }
+
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlides();
+      }
+    }
+
+
+    function copiarTexto(texto) {
+      navigator.clipboard.writeText(texto).then(() => {
+        alert('Copiado: ' + texto);
+      }).catch(err => {
+        prompt("Copie manualmente:", texto);
+      });
+    }
+
+
+    function soltarConfete() {
+      const colors = ['#f97316', '#ec4899', '#a855f7', '#22c55e', '#ffffff'];
+      for (let i = 0; i < 50; i++) {
+        const conf = document.createElement('div');
+        conf.classList.add('confetti');
+        conf.style.left = Math.random() * 100 + 'vw';
+        conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+        conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        conf.style.opacity = Math.random();
+        document.body.appendChild(conf);
+        setTimeout(() => conf.remove(), 4000);
+      }
+    }
+
+
+    updateSlides();
+  </script>
+</body>
+</html>
