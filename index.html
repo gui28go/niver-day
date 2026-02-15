@@ -1,0 +1,435 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Sua Surpresa - Delacruz</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600;800&display=swap');
+
+
+    :root {
+      --primary: #f97316;
+      --secondary: #ec4899;
+      --accent: #a855f7;
+      --bg-dark: #050009;
+      --text: #fdfdfd;
+    }
+
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+
+    /* --- FUNDO ANIMADO --- */
+    .bg-gradient {
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at top left, #2e1065, #000);
+      z-index: -2;
+      animation: pulseBg 10s infinite alternate;
+    }
+    @keyframes pulseBg { 0% { opacity: 0.8; } 100% { opacity: 1; } }
+
+
+    .orbs span {
+      position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.4;
+      animation: floatOrb 8s infinite alternate ease-in-out; z-index: -1;
+    }
+    .orbs span:nth-child(1) { width: 300px; height: 300px; background: var(--secondary); top: -50px; left: -50px; }
+    .orbs span:nth-child(2) { width: 250px; height: 250px; background: var(--accent); bottom: 10%; right: -20px; animation-delay: 2s; }
+    
+    @keyframes floatOrb { 0% { transform: translateY(0); } 100% { transform: translateY(-30px); } }
+
+
+    /* --- ANIMAÇÕES --- */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes floatPhoto {
+        0%, 100% { transform: translateY(0) rotate(-2deg); }
+        50% { transform: translateY(-10px) rotate(-2deg); }
+    }
+
+
+    @keyframes pulseBtn {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.7); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(236, 72, 153, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+    }
+
+
+    /* --- COMPONENTES --- */
+    .progress-container {
+      position: absolute; top: 10px; left: 10px; right: 10px;
+      display: flex; gap: 4px; z-index: 100; opacity: 0; transition: opacity 1s;
+    }
+    .progress-bar { flex: 1; height: 3px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #fff; width: 0%; transition: width 0.4s ease-out; }
+    
+    .story-container { flex: 1; position: relative; width: 100%; height: 100%; }
+
+
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      text-align: center; padding: 25px; opacity: 0; pointer-events: none;
+      transition: opacity 0.6s ease;
+      z-index: 10; /* Base level */
+    }
+    .slide.active { opacity: 1; pointer-events: auto; z-index: 20; }
+
+
+    /* Animação Sequencial nos Slides Ativos */
+    .slide.active h1 { animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .slide.active p { animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards; opacity: 0; }
+    .slide.active .photo-stack { animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s forwards; opacity: 0; }
+    .slide.active .ticket-card { animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards; opacity: 0; }
+
+
+    h1 { font-size: 2rem; font-weight: 800; margin-bottom: 15px; color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,0.5); letter-spacing: -1px; }
+    .highlight-text { background: linear-gradient(120deg, var(--primary), var(--secondary), #fff); -webkit-background-clip: text; color: transparent; }
+    p { font-size: 1.1rem; color: #e2e8f0; max-width: 80%; line-height: 1.6; font-weight: 300; }
+    
+    /* BOTÃO DE START (MÚSICA) */
+    .start-btn {
+      background: #fff; color: #000; padding: 20px 40px; border-radius: 50px;
+      font-size: 1.2rem; font-weight: bold; border: none; cursor: pointer;
+      margin-top: 30px; animation: pulseBtn 2s infinite;
+      z-index: 9999; pointer-events: auto;
+    }
+
+
+    /* FOTOS */
+    .photo-stack {
+      position: relative; width: 100%; max-width: 320px; aspect-ratio: 3/4;
+      margin-bottom: 25px; border-radius: 18px; 
+      background-size: cover; background-position: center;
+      border: 4px solid #fff; box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+      animation: floatPhoto 6s ease-in-out infinite alternate; 
+    }
+
+
+    /* TICKET & BOTÃO */
+    .ticket-card {
+      background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 24px;
+      padding: 25px; width: 100%; max-width: 360px; text-align: left;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      z-index: 200;
+    }
+    .code-box {
+      background: rgba(0,0,0,0.4); padding: 14px; border-radius: 12px;
+      margin-top: 12px; font-family: monospace; display: flex; justify-content: space-between; align-items: center;
+      border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s;
+    }
+    .code-box:active { background: rgba(255,255,255,0.1); transform: scale(0.98); }
+    
+    .btn-action {
+      background: linear-gradient(90deg, #db2777, #f97316);
+      color: white; border: none; padding: 18px; width: 100%; border-radius: 50px;
+      font-size: 1.1rem; font-weight: 700; text-decoration: none;
+      display: block; text-align: center; margin-top: 25px;
+      box-shadow: 0 10px 25px rgba(219, 39, 119, 0.4);
+      position: relative; 
+      z-index: 99999; /* Z-INDEX EXTREMO PARA FUNCIONAR */
+      pointer-events: auto;
+      animation: pulseBtn 2s infinite;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+
+
+    /* NAVEGAÇÃO */
+    .nav-zones { position: absolute; inset: 0; display: flex; z-index: 50; }
+    .nav-left { width: 30%; height: 100%; }
+    .nav-right { width: 70%; height: 100%; }
+
+
+    .confetti { position: absolute; width: 10px; height: 10px; z-index: 1000; animation: fall linear forwards; pointer-events: none; }
+    @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
+  </style>
+</head>
+<body>
+
+
+  <audio id="bgMusic" loop>
+    <source src="https://www.dropbox.com/scl/fi/vwhezgudlbbtnjsdsbn1a/cigana.mp3?rlkey=p3emjq9nvdwxfij1luipp8p9d&st=tvsp3dvn&raw=1" type="audio/mpeg">
+  </audio>
+
+
+  <div class="bg-gradient"></div>
+  <div class="orbs"><span></span><span></span></div>
+  
+  <div class="progress-container" id="prog"></div>
+
+
+  <div class="story-container" id="container"></div>
+
+
+  <div class="nav-zones" id="navZones" style="pointer-events: none;">
+    <div class="nav-left" onclick="handleNavClick(-1)"></div>
+    <div class="nav-right" onclick="handleNavClick(1)"></div>
+  </div>
+
+
+  <script>
+    // Lista de Imagens
+    const imagens = [
+      'https://i.postimg.cc/HsZsrfjs/2024-18-16-51-20250101-152958-0000.jpg',
+      'https://i.postimg.cc/BQQnQqZQ/2024-18-17-23-20250101-152942-0000.jpg',
+      'https://i.postimg.cc/655p596B/2024-18-17-25-20250101-152935-0000.jpg',
+      'https://i.postimg.cc/NfJfKWLq/2024-18-17-27-20250101-152926-0000.jpg',
+      'https://i.postimg.cc/4NNxNJfj/IMG-20250501-144546.jpg',
+      'https://i.postimg.cc/4NLNYrnY/IMG-20250628-205620.jpg',
+      'https://i.postimg.cc/ncRcX6MK/IMG-20250724-115555.jpg',
+      'https://i.postimg.cc/wTTjT6qS/IMG-20250912-225249.jpg',
+      'https://i.postimg.cc/zXXGXJDY/IMG-20251205-234632.jpg',
+      'https://i.postimg.cc/3R5wKmN0/IMG-20251225-173147.jpg'
+    ];
+
+
+    let current = 0;
+    const container = document.getElementById('container');
+    const prog = document.getElementById('prog');
+    const navZones = document.getElementById('navZones');
+    const music = document.getElementById('bgMusic');
+
+
+    function init() {
+      // --- SLIDE 0: TELA DE START (Obrigatória para áudio) ---
+      addSlide(`
+        <div style="font-size: 4rem; margin-bottom:20px">🎧</div>
+        <h1>Preparado?</h1>
+        <p>Aumente o som para uma experiência completa.</p>
+        <button class="start-btn" onclick="startExperience()">
+          ▶ TOCAR & ENTRAR
+        </button>
+      `);
+
+
+      // 1. Abertura
+      addSlide(`
+        <div style="font-size: 5rem; margin-bottom:20px">🎁</div>
+        <h1>Ei, psiu...</h1>
+        <p>Pare um pouquinho o que está fazendo.</p>
+        <p style="font-size:0.9rem; margin-top:20px; opacity:0.6">Toque na direita para continuar ></p>
+      `);
+
+
+      // 2. Texto
+      addSlide(`
+        <h1>Olhando pra gente...</h1>
+        <p>Às vezes a rotina nos leva, mas é bom parar pra lembrar de tudo que construímos.</p>
+      `);
+
+
+      // 3. Fotos
+      addPhotoSlide(0, "O começo de tudo");
+      addPhotoSlide(1, "Cada sorriso seu");
+      addPhotoSlide(2, "Momentos simples...");
+
+
+      // 4. Texto
+      addSlide(`
+        <h1>E sabe o que mais?</h1>
+        <p>Você merece momentos de alegria, de música e de leveza.</p>
+      `);
+
+
+      // 5. Fotos
+      addPhotoSlide(3, "Que valem ouro");
+      addPhotoSlide(4, "Nossas aventuras");
+      addPhotoSlide(5, "Lembranças boas");
+
+
+      // 6. Texto
+      addSlide(`
+        <h1>Por isso...</h1>
+        <p>Hoje eu queria te proporcionar uma noite diferente.</p>
+      `);
+
+
+      // 7. Fotos
+      addPhotoSlide(6, "Você ilumina tudo");
+      addPhotoSlide(7, "Com esse jeito");
+      addPhotoSlide(8, "Único de ser");
+
+
+      // 8. Foto Final
+      addPhotoSlide(9, "Te amo muito! ❤️");
+
+
+      // 9. Revelação
+      addSlide(`
+        <div style="font-size: 5rem; margin-bottom:20px">🎤</div>
+        <h1>PREPARA A VOZ!</h1>
+        <p>Hoje é dia de cantar com a alma...</p>
+        <h2 class="highlight-text" style="margin-top:20px">É SHOW DO DELACRUZ!</h2>
+      `);
+
+
+      // 10. O Ingresso (FINAL)
+      addSlide(`
+        <h1>Seu Convite VIP 🎟️</h1>
+        <div class="ticket-card">
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+            <small style="color:#cbd5e1; text-transform:uppercase; letter-spacing:1px">Evento</small>
+            <small style="color:#f97316; font-weight:bold">CONFIRMADO</small>
+          </div>
+          <h2 class="highlight-text" style="margin-bottom:20px; font-size:1.5rem">Delacruz - Tour</h2>
+          
+          <div class="code-box" onclick="copiar('11310612501')">
+            <span>113.106.125-01</span><small>📋</small>
+          </div>
+          <div class="code-box" onclick="copiar('Pimentinha.DC2')">
+            <span>Pimentinha.DC2</span><small>📋</small>
+          </div>
+
+
+          <a href="https://voucher.meubilhete.com.br/voucher/?id1=0d4b1ffe-6f6c-4e3d-ad83-d9a553f0c116" target="_blank" class="btn-action">
+            ABRIR INGRESSO 🔗
+          </a>
+          <p style="text-align:center; font-size:0.8rem; margin-top:15px; opacity:0.6">Clique na direita para celebrar!</p>
+        </div>
+      `);
+
+
+      // Ainda não renderiza as barras para não mostrar na tela de Start
+    }
+
+
+    // --- FUNÇÃO PARA INICIAR A EXPERIÊNCIA ---
+    function startExperience() {
+      // Tenta tocar o áudio
+      music.volume = 0.5; // Começa volume médio
+      music.play().then(() => {
+        // Sucesso
+      }).catch(e => {
+        console.log("Autoplay bloqueado, mas usuário interagiu.");
+      });
+
+
+      // Ativa as zonas de navegação
+      navZones.style.pointerEvents = "auto";
+      
+      // Passa para o primeiro slide real
+      current = 1;
+      
+      // Mostra a barra de progresso
+      prog.style.opacity = 1;
+      renderBars(); // Renderiza as barras agora ignorando o slide 0
+      
+      update();
+    }
+
+
+    function addPhotoSlide(imgIndex, texto) {
+      addSlide(`
+        <div class="photo-stack" style="background-image: url('${imagens[imgIndex]}');"></div>
+        <p>${texto}</p>
+      `);
+    }
+
+
+    function addSlide(html) {
+      const div = document.createElement('div');
+      div.className = 'slide';
+      div.innerHTML = html;
+      container.appendChild(div);
+      
+      // O primeiro slide já começa ativo
+      if(container.children.length === 1) div.classList.add('active');
+    }
+
+
+    function renderBars() {
+      prog.innerHTML = '';
+      // Ignora o slide 0 (Start Screen) na contagem das barras
+      const total = document.querySelectorAll('.slide').length - 1;
+      for (let i = 0; i < total; i++) {
+        prog.innerHTML += '<div class="progress-bar"><div class="progress-fill"></div></div>';
+      }
+    }
+
+
+    function update() {
+      const slides = document.querySelectorAll('.slide');
+      
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === current);
+      });
+      
+      // Atualiza barras (offset de -1 por causa da tela de start)
+      const bars = document.querySelectorAll('.progress-bar');
+      const barIndex = current - 1; 
+
+
+      if (barIndex >= 0) {
+        bars.forEach((b, i) => {
+          const fill = b.querySelector('.progress-fill');
+          if (i < barIndex) fill.style.width = '100%';
+          else if (i === barIndex) fill.style.width = '100%';
+          else fill.style.width = '0%';
+        });
+      }
+    }
+
+
+    function handleNavClick(dir) {
+      const total = document.querySelectorAll('.slide').length;
+      
+      // Se for o último slide e clicar pra frente -> Confete
+      if (current === total - 1 && dir === 1) {
+        launchConfetti();
+      } else {
+        // Não deixa voltar para o slide 0 (Start Screen)
+        const next = current + dir;
+        if (next >= 1 && next < total) {
+            current = next;
+            update();
+        }
+      }
+    }
+
+
+    function copiar(t) {
+      if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(t).then(() => alert('Copiado: ' + t));
+      } else {
+          let ta = document.createElement("textarea");
+          ta.value = t; ta.style.position="fixed"; document.body.appendChild(ta);
+          ta.focus(); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+          alert('Copiado: ' + t);
+      }
+    }
+
+
+    function launchConfetti() {
+      const colors = ['#f97316', '#ec4899', '#a855f7', '#fff'];
+      for (let i = 0; i < 50; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.background = colors[Math.floor(Math.random()*colors.length)];
+        c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4000);
+      }
+    }
+
+
+    init();
+  </script>
+</body>
+</html>
